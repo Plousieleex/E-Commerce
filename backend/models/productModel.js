@@ -61,7 +61,7 @@ const productSchema = new mongoose.Schema({
         // Active / Deactive
         type: Boolean,
         required: [true, 'A product need a status. Active / Deactive'],
-        default: 'Active'
+        default: true
     },
     productCategory: [
         {
