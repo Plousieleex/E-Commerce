@@ -43,7 +43,7 @@ exports.staffLogin = catchAsync(async (req, res, next) => {
     }
 
     // 1.5) Check if user exists in database
-    const user = await Staff.findOne({email}).select('+password').select('+staffRole');
+    const user = await Staff.findOne({email}).select('+password').select('+userRole');
     if(!user){
         return next(new AppError('Incorrect email or password.'), 401);
     }
