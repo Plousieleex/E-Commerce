@@ -10,7 +10,7 @@ router.post('/signup',
     authController.checkRole('admin'), 
     authController.signup);
 
-// Staff members can Login
+// Staff members can Login (If you try to )
 router.post('/login', authController.staffLogin);
 
 
