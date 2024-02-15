@@ -14,3 +14,5 @@ router
     .route('/:id')
     // Get spesific data (Parameter = id)
     .get(productController.getProduct);
+
+module.exports = router;
