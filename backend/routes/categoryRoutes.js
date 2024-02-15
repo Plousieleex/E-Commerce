@@ -9,3 +9,6 @@ router
     .get(categoryController.getAllCategories)
     // Create new category
     .post(categoryController.createCategory);
+
+
+module.exports = router;
