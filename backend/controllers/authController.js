@@ -1,9 +1,8 @@
-const crypto = require('cryptojs');
-const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const Staff = require('./../models/staffModel');
+const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const {promisify} = require('util');
 
 const signToken = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -23,8 +22,6 @@ const createSendToken = (user, statusCode, res) => {
 
     res.cookie('jwt', token, cookieOptions);
 
-    userPassword = undefined;
-
     res.status(statusCode).json({
         status: 'success',
         token,
@@ -34,34 +31,9 @@ const createSendToken = (user, statusCode, res) => {
     });
 };
 
-exports.staffLogin = catchAsync(async (req, res, next) => {
-    const {email, password} = req.body;
-
-    // 1) Check if email and password exists
-    if(!email || !password){
-        return next(new AppError('Please provide email and password', 400));
-    }
-
-    // 1.5) Check if user exists in database
-    const user = await Staff.findOne({email}).select('+password').select('+userRole');
-    if(!user){
-        return next(new AppError('Incorrect email or password.'), 401);
-    }
-    // 2) Check user's userRole (If user is not staff or admin, they can't login)
-    if(!user.userRole.includes('staff', 'admin')){
-        return next(new AppError('You do not have permission to perform this action.', 401));
-    }
-    // 3) Check if password is correct
-    if(!(await user.passwordConfirmation(password, user.password))){
-        return next(new AppError('Incorrect email or password.', 401));
-    }
-
-    // 4) If everything is OK, send token
-    createSendToken(user, 200, res);
-});
-
+// Signup for all users
 exports.signup = catchAsync(async (req, res, next) => {
-    const newStaff = await Staff.create({
+    const newUser = await User.create({
         email: req.body.email,
         userNameSurname: req.body.userNameSurname,
         phoneNumber: req.body.phoneNumber,
@@ -70,51 +42,90 @@ exports.signup = catchAsync(async (req, res, next) => {
         passwordConfirm: req.body.passwordConfirm
     });
 
-    createSendToken(newStaff, 201, res);
+    createSendToken(newUser, 201, res);
 });
 
-exports.protect = catchAsync(async (req, res, next) => {
+exports.login = catchAsync(async (req, res, next) => {
+    const {email, password} = req.body;
+
+    // 1) Check if email and password exists
+    if(!email || !password){
+        return next(new AppError('No user found with that email.', 400))
+    }
+
+    // 2) Check if user exists && password is correct
+    const user = await User.findOne({email}).select('+password');
+
+    if(!user || !(await user.passwordConfirmation(password, user.password))){
+        return next(new AppError('Wrong credits.', 404));
+    }
+
+    // 3) If everything ok, send token to client
+    createSendToken(user, 200, res);
+});
+
+exports.permit = (...permittedRoles) => {
+    return (req, res, next) => {
+        if(!permittedRoles.includes(req.user.userRole)){
+            return next(
+                new AppError('You do not have permission to perform this action.', 403)
+            );
+        }
+        next();
+    };
+};
+
+exports.protect = catchAsync(async(req, res, next) => {
     // 1) Getting token and check if it's there
     let token;
-    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
+    if(
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
         token = req.headers.authorization.split(' ')[1];
     }
 
     if(!token){
         return next(
             new AppError('You are not logged in! Please log in to get access.', 401)
-        );
-    }
-
-    // 2) Verification Token
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
-    // 3) Check if user still exists
-    const currentUser = await Staff.findById(decoded.id);
-    if(!currentUser){
-        return next(
-            new AppError('The user belonging to this token does no longer exist.', 401)
-        );
-    }
-
-    // 4) Check if user changed password after the token was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)){
-        return next(
-            new AppError('User recently changed password. Please log in again.', 401)
         )
     }
 
-    // If everything is OK, ACCESS
+    // 2) Verification token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    // 3) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if(!currentUser){
+        return next(
+            new AppError('The user belonging to this token does no longer exist.', 401)
+        )
+    }
+
+    // 4) Check if user changed password after the token was issued
+    if(currentUser.changedPasswordAfter(decoded.iat)) {
+        return next(
+            new AppError('User recently changed password! Please log in again.', 401)
+        );
+    }
+
+    // Grant access to protected route
     req.user = currentUser;
     next();
 });
 
-exports.checkRole = (...roles) => {
-    return (req, res, next) => {
-        if(!roles.includes(req.user.userRole)){
-            return next(
-                new AppError('You do not have permission to perform this action.', 403));
-        }
-        next();
-    };
-};
+exports.forgotPassword = catchAsync(async(req, res, next) => {
+    // 1) First, check if email is valid
+    const user = User.findOne({email: req.body.email});
+    if(!user){
+        return next(new AppError('There is no user with this email address.', 404));
+    }
+
+    // 2) Generate the random reset token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({validateBeforeSave: false});
+
+    // 3) Send it to user's email.
+
+    // This part will be done later.
+});
