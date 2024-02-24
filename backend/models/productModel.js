@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 
 const productSchema = new mongoose.Schema({
     productName: {
@@ -7,8 +6,8 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product must have a name.']
     },
     productDescription: {
-        type: String
-        // Required
+        type: String,
+        required: [true, 'A product must have a description.']
     },
     productMedia: {
         type: [String],
@@ -19,11 +18,12 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product must have a price.']
     },
     productCompareAtPrice: {
-        type: Number
+        type: Number,
+        default: null
     },
     productInventory: [
         {
-            type: {
+            inventoryQuantity: {
                 type: Number,
                 default: 0
             },
@@ -38,31 +38,22 @@ const productSchema = new mongoose.Schema({
             variantName: String,
             variantDescription: String,
             variantPrice: {
-                type: Number,
-                default: function () {
-                    return this.productPrice;
-                }
+                type: Number
             },
             variantInventory: {
-                type: Number,
-                default: function () {
-                    return this.productInventory;
-                }
+                type: Number
             },
             variantInventoryTrack: {
-                type: Boolean,
-                default: function () {
-                    return this.trackByCustomers;
-                }
+                type: Boolean
             }
         }
     ],
     productStatus: {
-        // Active / Deactive
         type: Boolean,
-        required: [true, 'A product need a status. Active / Deactive'],
+        required: [true, 'A product need a status. Active / Deactive.'],
         default: true
     },
+    // Product can belong to one or more categories.
     productCategory: [
         {
             type: mongoose.Schema.ObjectId,
@@ -74,11 +65,16 @@ const productSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     },
     createdBy: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Staff'
+        ref: 'User',
+        required: true
+    },
+    reviews: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Review'
     }
 });
 
