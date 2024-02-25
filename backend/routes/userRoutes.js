@@ -11,4 +11,9 @@ router
     .route('/login')
     .post(authController.login);
 
+router
+    .route('/adminlogin')
+    .post(
+        authController.adminLogin);
+
 module.exports = router;

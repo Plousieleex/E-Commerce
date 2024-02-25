@@ -17,6 +17,10 @@ router
         productController.getProducts);
 
 router
+    .route('/showcase')
+    .get(productController.getAllProductsShowcase);
+
+router
     .route('/:id')
     .get(
         productController.getProductDetailed

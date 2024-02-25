@@ -56,3 +56,30 @@ exports.getProducts = catchAsync(async(req, res, next) => {
         }
     });
 });
+
+// Get all products with Showcase
+exports.getAllProductsShowcase = catchAsync(async(req, res, next) => {
+    const allProductsShowcase = await Product.find().select(
+        'productName productMedia productPrice productCompareAtPrice'
+    );
+
+    res.status(200).json({
+        status: 'success',
+        results: allProductsShowcase.length,
+        data: {
+            data: allProductsShowcase
+        }
+    });
+});
+
+// Updating products (Don't use it for now.)
+exports.updateProduct = catchAsync(async(req, res, next) => {
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    });
+
+    if(!product){
+        return next(new AppError('No product found with that ID.', 404));
+    }
+}); 
