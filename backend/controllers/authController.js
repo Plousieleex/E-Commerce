@@ -45,6 +45,34 @@ exports.signup = catchAsync(async (req, res, next) => {
     createSendToken(newUser, 201, res);
 });
 
+// Only admins and staffs can login via this
+
+exports.adminLogin = catchAsync(async(req, res, next) => {
+    const {email, password} = req.body;
+    if(!email || !password){
+        return next(new AppError('No user found with that email.', 400));
+    }
+
+    const user = await User.findOne({email}).select('+password').select('+userRole');
+
+    if(!user){
+        return next(new AppError('Wrong credits.', 404));
+    }
+
+    // 1) Check User Role
+    if(!(user.userRole === 'admin' || user.userRole === 'staff')){
+        return next(new AppError('You do not have permission.', 400));
+    }
+
+    if(!(await user.passwordConfirmation(password, user.password))){
+        return next(new AppError('Wrong credits.', 404));
+    }
+
+    // 3) Send token
+    createSendToken(user, 200, res);
+});
+
+// Normal user login
 exports.login = catchAsync(async (req, res, next) => {
     const {email, password} = req.body;
 
