@@ -11,6 +11,4 @@ exports.createCategory = catchAsync(async(req, res, next) => {
             data: newCategory
         }
     });
-
-    next();
 });
