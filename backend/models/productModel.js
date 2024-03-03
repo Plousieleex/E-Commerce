@@ -76,6 +76,24 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Review'
     }
+},
+{
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
+});
+
+productSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'product',
+    localField: '_id'
+});
+
+productSchema.pre(/^find/, function(next){
+    this.populate({
+        path: 'createdBy',
+        select: 'userNameSurname email phoneNumber'
+    });
+    next();
 });
 
 const Product = mongoose.model('Product', productSchema);

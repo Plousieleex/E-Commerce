@@ -14,23 +14,22 @@ router
     .get(
         authController.protect,
         authController.permit('admin', 'staff'),
-        productController.getProducts);
+        productController.getProducts)
 
-router
-    .route('/showcase')
-    .get(productController.getAllProductsShowcase);
 
+// Showcase Router (All Products)
+router.route('/showcase').get(productController.getAllProductsShowcase);
+// Detailed Product Router for One Product (Parameter: id)
 router
     .route('/:id')
-    .get(
-        productController.getProductDetailed
-    );
-
-router
-    .route('/showcase/:id')
-    .get(
-        productController.getProductShowcase
-    );
+    .get(productController.getProductDetailed)
+    .patch(
+        authController.protect,
+        authController.permit('admin'),
+        productController.updateProduct
+        );
+// Showcase Router for One Product (Parameter: id)
+router.route('/showcase/:id').get(productController.getProductShowcase);
 
 
 

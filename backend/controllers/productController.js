@@ -34,7 +34,7 @@ exports.getProductShowcase = catchAsync(async(req, res, next) => {
         productName: 1,
         productMedia: 1,
         productPrice: 1,
-        productCompareAtPrice: 1
+        productCategory: 1
     });
 
     res.status(200).json({
@@ -60,7 +60,7 @@ exports.getProducts = catchAsync(async(req, res, next) => {
 // Get all products with Showcase
 exports.getAllProductsShowcase = catchAsync(async(req, res, next) => {
     const allProductsShowcase = await Product.find().select(
-        'productName productMedia productPrice productCompareAtPrice'
+        'productName productMedia productPrice productCompareAtPrice createdBy'
     );
 
     res.status(200).json({
@@ -72,7 +72,7 @@ exports.getAllProductsShowcase = catchAsync(async(req, res, next) => {
     });
 });
 
-// Updating products (Don't use it for now.)
+// Updating products 
 exports.updateProduct = catchAsync(async(req, res, next) => {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
@@ -82,4 +82,25 @@ exports.updateProduct = catchAsync(async(req, res, next) => {
     if(!product){
         return next(new AppError('No product found with that ID.', 404));
     }
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            data: product
+        }
+    });
 }); 
+
+// Deleting Products
+exports.deleteProduct = catchAsync(async(req, res, next) => {
+    const product = await Product.findByIdAndDelete(req.params.id);
+
+    if(!product){
+        return next(new AppError('No product found with that ID.', 404));
+    }
+
+    res.status(204).json({
+        status: 'success',
+        data: null
+    });
+});
