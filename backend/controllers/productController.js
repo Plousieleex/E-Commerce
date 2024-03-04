@@ -1,6 +1,5 @@
 const Product = require('./../models/productModel');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
 
 // Get User id for Product Creation
