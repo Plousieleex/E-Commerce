@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('./userModel');
 
 const addressSchema = new mongoose.Schema({
   addressTitle: {
