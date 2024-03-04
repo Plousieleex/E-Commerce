@@ -53,15 +53,19 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product need a status. Active / Deactive.'],
         default: true
     },
-    productParentCategory: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'ParentCategory'
-    },
-    // Product can belong to one or more categories.
-    productSubCategory: [
+    productCategory: [
         {
-            type: mongoose.Schema.ObjectId,
-            ref: 'SubCategory'
+            productParentCategory: {
+                type: mongoose.Schema.ObjectId,
+                ref: 'ParentCategory'
+            },
+            productSubCategory: [
+                {
+                    type: mongoose.Schema.ObjectId,
+                    ref: 'SubCategory'
+                }
+            ]
+
         }
     ],
     vendor: {
