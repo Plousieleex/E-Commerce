@@ -5,8 +5,7 @@ const factory = require('./handlerFactory');
 
 // Get User id for Product Creation
 exports.getUser = (req, res, next) => {
-    const createdBy = req.user._id;
-    req.body.createdBy = createdBy;
+    req.body.createdBy = req.user._id;
     next();
 };
 
