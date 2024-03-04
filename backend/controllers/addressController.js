@@ -2,8 +2,7 @@ const Address = require('./../models/addressModel');
 const factory = require('./handlerFactory');
 
 exports.getUser = (req, res, next) => {
-  const userId = req.user._id;
-  req.body.user = userId;
+  req.body.user = req.user._id;
   next();
 };
 
