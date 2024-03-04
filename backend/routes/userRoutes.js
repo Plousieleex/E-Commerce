@@ -22,18 +22,8 @@ router
     .route('/')
     .get(userController.getCustomers);
 
-// Only for staff operations
-router
-    .route('/staff')
-    .get(userController.getStaffMembers);
-
 router
     .route('/:id')
-    .get(userController.getCustomer)
-    .patch(userController.updateUserRole);
-
-router
-    .route('/staff/:id')
-    .get(userController.getStaffMember);
+    .get(userController.getCustomer);
 
 module.exports = router;

@@ -53,11 +53,15 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product need a status. Active / Deactive.'],
         default: true
     },
+    productParentCategory: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'ParentCategory'
+    },
     // Product can belong to one or more categories.
-    productCategory: [
+    productSubCategory: [
         {
             type: mongoose.Schema.ObjectId,
-            ref: 'Category'
+            ref: 'SubCategory'
         }
     ],
     vendor: {
@@ -82,17 +86,17 @@ const productSchema = new mongoose.Schema({
     toObject: {virtuals: true}
 });
 
-productSchema.virtual('reviews', {
+/* productSchema.virtual('reviews', {
     ref: 'Review',
     foreignField: 'product',
     localField: '_id'
-});
+}); */
 
 productSchema.pre(/^find/, function(next){
     this.populate({
         path: 'createdBy',
         select: 'userNameSurname email phoneNumber'
-    });
+    })
     next();
 });
 

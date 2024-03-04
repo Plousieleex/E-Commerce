@@ -10,6 +10,17 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+// Checking user activity (If user is blocked, they can't reach to platform)
+const isUserActive = (...active) => {
+  return (req, res, next) => {
+    if(!active.includes(req.user.active)){
+      return next(
+        new AppError('You do not have permission to perform this action.', 403)
+      );
+    }
+  };
+};
+
 exports.getCustomers = catchAsync(async(req, res, next) => {
   // GET ALL CUSTOMERS
   const customers = await User.find({ userRole: 'user' });
@@ -18,18 +29,6 @@ exports.getCustomers = catchAsync(async(req, res, next) => {
     status: 'success',
     data: {
       data: customers
-    }
-  });
-});
-
-exports.getStaffMembers = catchAsync(async(req, res, next) => {
-  // GET ALL STAFF MEMBERS
-  const staffMembers = await User.find({ $or: [{userRole: 'admin'}, {userRole: 'staff'}]});
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      data: staffMembers
     }
   });
 });
@@ -66,26 +65,6 @@ exports.getStaffMember = catchAsync(async(req, res, next) => {
   });
 });
 
-exports.updateUserRole = catchAsync(async(req, res, next) => {
-  // ONLY ADMIN'S CAN USE THIS
-  // USE FOR UPDATING USER'S ROLE TO STAFF OR ADMIN 
-  const updatedUser = await User.findByIdAndUpdate(req.params.id, {userRole: req.body.userRole}, {
-    new: true,
-    runValidators: true
-  });
-
-  if(!updatedUser){
-    return next(new AppError('User not found.', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      data: updatedUser
-    }
-  });
-});
-
 exports.updateMe = catchAsync(async(req, res, next) => {
   // UPDATE FUNCTION FOR SELF UPDATE
   // USERS CAN'T UPDATE THEIR ROLES 
@@ -111,4 +90,9 @@ exports.updateMe = catchAsync(async(req, res, next) => {
       data: updatedUser
     }
   });
+});
+
+// Blocking or Unblocking Customers
+exports.updateUserActivity = catchAsync(async(req, res, next) => {
+  // Will be filled
 });

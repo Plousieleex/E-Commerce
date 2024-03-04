@@ -9,11 +9,12 @@ router
     // Only admins and staffs can create products
     .post(
         authController.protect,
-        authController.permit('admin', 'staff'),
+        authController.permit('admin'),
+        productController.getUser,
         productController.createProduct)
     .get(
         authController.protect,
-        authController.permit('admin', 'staff'),
+        authController.permit('admin'),
         productController.getProducts)
 
 

@@ -1,32 +1,25 @@
 const Product = require('./../models/productModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 
-// Create Product 
-exports.createProduct = catchAsync(async(req, res, next) => {
+// Get User id for Product Creation
+exports.getUser = (req, res, next) => {
     const createdBy = req.user._id;
     req.body.createdBy = createdBy;
-    const newProduct = await Product.create(req.body);
+    next();
+};
 
-    res.status(201).json({
-        status: 'success',
-        data: {
-            data: newProduct
-        }
-    });
-}); 
-
+// Create Product (Factory)
+exports.createProduct = factory.createOne(Product);
+// Update Product
+exports.updateProduct = factory.updateOne(Product);
 // Get One Product with Details
-exports.getProductDetailed = catchAsync(async(req, res, next) => {
-    const product = await Product.findById(req.params.id);
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            data: product
-        }
-    }); 
-});
+exports.getProductDetailed = factory.getOne(Product, {path: 'reviews'});
+// Get All Products
+exports.getProducts = factory.getAll(Product);
+// Delete Product
+exports.deleteProduct = factory.deleteOne(Product);
 
 // Get One Product Showcase (Only Spesific Details)
 exports.getProductShowcase = catchAsync(async(req, res, next) => {
@@ -45,18 +38,6 @@ exports.getProductShowcase = catchAsync(async(req, res, next) => {
     });
 });
 
-// Get all products
-exports.getProducts = catchAsync(async(req, res, next) => {
-    const allProducts = await Product.find();
-    res.status(200).json({
-        status: 'success',
-        results: allProducts.length,
-        data: {
-            data: allProducts
-        }
-    });
-});
-
 // Get all products with Showcase
 exports.getAllProductsShowcase = catchAsync(async(req, res, next) => {
     const allProductsShowcase = await Product.find().select(
@@ -69,38 +50,5 @@ exports.getAllProductsShowcase = catchAsync(async(req, res, next) => {
         data: {
             data: allProductsShowcase
         }
-    });
-});
-
-// Updating products 
-exports.updateProduct = catchAsync(async(req, res, next) => {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-    });
-
-    if(!product){
-        return next(new AppError('No product found with that ID.', 404));
-    }
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            data: product
-        }
-    });
-}); 
-
-// Deleting Products
-exports.deleteProduct = catchAsync(async(req, res, next) => {
-    const product = await Product.findByIdAndDelete(req.params.id);
-
-    if(!product){
-        return next(new AppError('No product found with that ID.', 404));
-    }
-
-    res.status(204).json({
-        status: 'success',
-        data: null
     });
 });
