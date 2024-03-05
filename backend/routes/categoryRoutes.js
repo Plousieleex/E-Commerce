@@ -25,4 +25,15 @@ router
   .patch(categoryController.updateParentCategory)
   .delete(categoryController.deleteParentCategory);
 
+router
+  .route('/producttitle')
+  .get(categoryController.getAllProductTitle)
+  .post(categoryController.createProductTitle);
+
+router
+  .route('/producttitle/:id')
+  .get(categoryController.getProductTitle)
+  .patch(categoryController.updateParentCategory)
+  .delete(categoryController.deleteProductTitle);
+
 module.exports = router;
