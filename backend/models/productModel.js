@@ -53,25 +53,10 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product need a status. Active / Deactive.'],
         default: true
     },
-    productTitle:{
+    productCategory: {
         type: mongoose.Schema.ObjectId,
-        ref: 'ProductTitle'
+        ref: 'ProductCategory'
     },
-    productCategory: [
-        {
-            productParentCategory: {
-                type: mongoose.Schema.ObjectId,
-                ref: 'ParentCategory'
-            },
-            productSubCategory: [
-                {
-                    type: mongoose.Schema.ObjectId,
-                    ref: 'SubCategory'
-                }
-            ]
-
-        }
-    ],
     productRating: {
         type: Number,
         default: 4.5,
@@ -115,6 +100,9 @@ productSchema.pre(/^find/, function(next){
     this.populate({
         path: 'createdBy',
         select: 'userNameSurname email phoneNumber'
+    }).populate({
+        path: 'productCategory',
+        select: 'productCategoryTitle'
     })
     next();
 });
