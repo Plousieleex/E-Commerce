@@ -11,7 +11,13 @@ const parentCategorySchema = new mongoose.Schema({
     },
     categoryImage:{
         type: [String]
-    }
+    },
+    subCategories: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'SubCategory'
+        }
+    ]
 });
 
 const ParentCategory = mongoose.model('ParentCategory', parentCategorySchema);
