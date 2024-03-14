@@ -15,6 +15,10 @@ router
   .delete(categoryController.deleteSubCategory);
 
 router
+  .route('/subcategory/:id/products')
+  .get(categoryController.getProductsSubCategory);
+
+router
   .route('/parentcategory')
   .get(categoryController.getAllParentCategory)
   .post(categoryController.createParentCategory);
@@ -26,14 +30,18 @@ router
   .delete(categoryController.deleteParentCategory);
 
 router
-  .route('/producttitle')
-  .get(categoryController.getAllProductTitle)
-  .post(categoryController.createProductTitle);
+  .route('/parentcategory/:id/products')
+  .get(categoryController.getProductsParentCategory)
 
 router
-  .route('/producttitle/:id')
-  .get(categoryController.getProductTitle)
-  .patch(categoryController.updateParentCategory)
-  .delete(categoryController.deleteProductTitle);
+  .route('/productcategory')
+  .get(categoryController.getAllProductCategory)
+  .post(categoryController.createProductCategory)
+
+router
+  .route('/productcategory/:id')
+  .get(categoryController.getProductCategory)
+  .patch(categoryController.updateProductCategory)
+  .delete(categoryController.deleteProductCategory)
 
 module.exports = router;
