@@ -15,7 +15,7 @@ const productCategorySchema = new mongoose.Schema({
         type: String
     },
     productCategoryImage: {
-        type: [String]
+        type: String
     }
 });
 
@@ -24,6 +24,16 @@ productCategorySchema.pre('save', async function(next){
         this.subCategory,
         {$addToSet: {productCategories: this._id}}
     );
+    next();
+});
+
+productCategorySchema.pre('save', async function(next){
+    const trueCount = await this.constructor.countDocuments({productVisibility: true});
+
+    if (trueCount >= 8){
+        this.productVisibility = false;
+    }
+
     next();
 });
 
