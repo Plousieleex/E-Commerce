@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 
 const productSchema = new mongoose.Schema({
     productName: {
@@ -7,8 +6,8 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product must have a name.']
     },
     productDescription: {
-        type: String
-        // Required
+        type: String,
+        required: [true, 'A product must have a description.']
     },
     productMedia: {
         type: [String],
@@ -19,11 +18,12 @@ const productSchema = new mongoose.Schema({
         required: [true, 'A product must have a price.']
     },
     productCompareAtPrice: {
-        type: Number
+        type: Number,
+        default: null
     },
     productInventory: [
         {
-            type: {
+            inventoryQuantity: {
                 type: Number,
                 default: 0
             },
@@ -38,48 +38,73 @@ const productSchema = new mongoose.Schema({
             variantName: String,
             variantDescription: String,
             variantPrice: {
-                type: Number,
-                default: function () {
-                    return this.productPrice;
-                }
+                type: Number
             },
             variantInventory: {
-                type: Number,
-                default: function () {
-                    return this.productInventory;
-                }
+                type: Number
             },
             variantInventoryTrack: {
-                type: Boolean,
-                default: function () {
-                    return this.trackByCustomers;
-                }
+                type: Boolean
             }
         }
     ],
     productStatus: {
-        // Active / Deactive
         type: Boolean,
-        required: [true, 'A product need a status. Active / Deactive'],
+        required: [true, 'A product need a status. Active / Deactive.'],
         default: true
     },
-    productCategory: [
-        {
-            type: mongoose.Schema.ObjectId,
-            ref: 'Category'
-        }
-    ],
+    productCategory: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'ProductCategory'
+    },
+    productRating: {
+        type: Number,
+        default: 4.5,
+        min: [1, 'Rating must be above 1.0'],
+        max: [5, 'Rating must be below 5.0'],
+        set: val => Math.round(val * 10) / 10
+    },
+    ratingsQuantity: {
+        type: Number,
+        default: 0
+    },
     vendor: {
         type: String
     },
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     },
     createdBy: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Staff'
+        ref: 'User',
+        required: true
+    },
+    reviews: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Review'
     }
+},
+{
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
+});
+
+/* productSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'product',
+    localField: '_id'
+}); */
+
+productSchema.pre(/^find/, function(next){
+    this.populate({
+        path: 'createdBy',
+        select: 'userNameSurname email phoneNumber'
+    }).populate({
+        path: 'productCategory',
+        select: 'productCategoryTitle'
+    })
+    next();
 });
 
 const Product = mongoose.model('Product', productSchema);

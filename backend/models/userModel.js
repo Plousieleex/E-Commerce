@@ -1,12 +1,12 @@
 const crypto = require('cryptojs');
 const mongoose = require('mongoose');
 const validator = require('validator');
-const bcrypt = require('bcryptjs');
+const bcyrpt = require('bcrypt');
 
-const staffSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: [true, 'A staff member must have an email.'],
+        required: [true, 'A user must have an email.'],
         unique: true,
         validate: [validator.isEmail, 'Please provide a valid email.']
     },
@@ -16,27 +16,25 @@ const staffSchema = new mongoose.Schema({
     },
     phoneNumber: {
         type: String,
-        unique: true,
-        // Required ?
+        unique: true
     },
     userRole: {
         type: String,
-        required: [true, 'Please provide a staff role.'],
-        enum: ['admin', 'staff'],
-        default: 'staff',
+        enum: ['admin','user'],
+        default: 'user'
     },
     password: {
         type: String,
         required: [true, 'A user must have a password.'],
         minlength: [8, 'A password must have more or equal then 8 characters.'],
         validate: {
-            validator: function (val) {
+            validator: function(val){
                 const specialCharacters = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
                 const hasUpperCase = /[A-Z]/.test(val);
                 const hasNumber = /\d/.test(val);
                 return specialCharacters.test(val) && hasUpperCase && hasNumber;
             },
-            message: 'Password must contain at least one uppercase letter, one number' +
+            message: 'Password must contain at least one uppercase letter, one number ' +
                 'and one special character.'
         },
         select: false
@@ -45,7 +43,7 @@ const staffSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please confirm your password.'],
         validate: {
-            validator: function (val) {
+            validator: function (val){
                 return val === this.password;
             },
             message: "Passwords doesn't match."
@@ -54,47 +52,69 @@ const staffSchema = new mongoose.Schema({
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    active: {
+        type: Boolean,
+        default: true,
+        select: false
+    }
 });
 
-staffSchema.pre('save', async function(next){
+userSchema.pre('save', async function(next){
     if(!this.isModified('password')) return next();
 
-    this.password = await bcrypt.hash(this.password, 12);
+    this.password = await bcyrpt.hash(this.password, 12);
 
     this.passwordConfirm = undefined;
-
     next();
 });
 
-staffSchema.pre('save', function(next){
+userSchema.pre('save', function (next){
     if(!this.isModified('password') || this.isNew) return next();
 
     this.passwordChangedAt = Date.now() - 1000;
     next();
 });
 
-staffSchema.methods.passwordConfirmation = async function(
+// If someone tries to register they will be automatically assign as a 'user'
+// userSchema.pre('save', function (next){
+//     if(this.isNew){
+//         this.userRole = 'user';
+//     }
+//     next();
+// });
+
+userSchema.methods.passwordConfirmation = async function(
     candidatePassword,
     userPassword
-) {
-    return await bcrypt.compare(candidatePassword, userPassword);
+){
+    return await bcyrpt.compare(candidatePassword, userPassword);
 };
 
-staffSchema.methods.changedPasswordAfter = function(JWTTimestamp){
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     if(this.passwordChangedAt){
-        const changedTimestamp = parseInt(
+        const changedTimeStamp = parseInt(
             this.passwordChangedAt.getTime() / 1000,
             10
         );
 
-        return JWTTimestamp < changedTimestamp;
+        return JWTTimestamp < changedTimeStamp;
     }
 
-    // NOT Changed
+    // False means NOT Changed
+
     return false;
-}
+};
+
+userSchema.methods.createPasswordResetToken = function (){
+    const resetToken = crypto.lib.WordArray.random(32).toString();
+    this.passwordResetToken = crypto.SHA256(resetToken).toString();
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    return resetToken;
+};
 
 
-const Staff = mongoose.model('Staff', staffSchema);
 
-module.exports = Staff;
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
