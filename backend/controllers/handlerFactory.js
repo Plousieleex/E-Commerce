@@ -14,27 +14,6 @@ exports.createOne = Model =>
     });
   });
 
-
-// Update Model
-exports.updateOne = Model =>
-  catchAsync(async(req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-
-    if(!doc){
-      return next(new AppError('No Document found with that ID.', 404));
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        data: doc
-      }
-    });
-  });
-
 // Get Model (One Model)
 exports.getOne = (Model, popOptions) => 
   catchAsync(async(req, res, next) => {
@@ -82,3 +61,45 @@ exports.deleteOne = Model =>
       data: null
     });
   });
+
+// Update Model
+exports.updateOne = Model =>
+    catchAsync(async(req, res, next) => {
+        const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        if(!doc){
+            return next(new AppError('No Document found with that ID.', 404));
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                data: doc
+            }
+        });
+    });
+
+// Update Category Image
+exports.updateCategoryImage = Model =>
+    catchAsync(async(req, res, next) => {
+        const {categoryImage} = req.body;
+        const doc = await Model.findByIdAndUpdate(req.params.id, { categoryImage }, {
+            new: true,
+            runValidators: true
+        });
+
+        if(!doc){
+            return next(new AppError('No Document found with that ID.', 404));
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                data: doc
+            }
+        });
+    });
+
