@@ -42,6 +42,7 @@ productCategorySchema.pre(/^find/, function (next) {
         path: 'subCategory',
         select: 'subCategoryTitle'
     });
+    this.find({ productVisibility: true });
     next();
 });
 

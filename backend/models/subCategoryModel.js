@@ -48,6 +48,7 @@ subCategorySchema.pre(/^find/, function (next){
         path: 'parentCategory',
         select: 'parentCategoryTitle'
     });
+    this.find({ productVisibility: true });
     next();
 });
 
