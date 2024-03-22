@@ -4,6 +4,10 @@ const categoryController = require('./../controllers/categoryController');
 const router = express.Router();
 
 router
+    .route('/subcategory-with-product-category')
+    .get(categoryController.getSubCategoriesWithProductCategories);
+
+router
   .route('/subcategory')
   .get(categoryController.getAllSubCategory)
   .post(

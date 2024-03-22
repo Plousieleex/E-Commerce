@@ -265,3 +265,29 @@ exports.getProductsSubCategory = catchAsync(async(req, res, next) => {
     });
 });
 
+// GET All Categories
+exports.getSubCategoriesWithProductCategories = catchAsync(async(req, res, next) => {
+    const parentCategories = await ParentCategory.find();
+
+
+    const subCategoriesWithProductCategories = await Promise.all(parentCategories.map(async (parentCategory) => {
+        const subCategories = await SubCategory.find({ parentCategory: parentCategory._id });
+        const subCategoriesData = await Promise.all(subCategories.map(async (subCategory) => {
+            const productCategories = await ProductCategory.find({ subCategory: subCategory._id });
+            return {
+                subCategory: subCategory,
+                productCategories: productCategories
+            };
+        }));
+        return subCategoriesData;
+    }));
+
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            data: subCategoriesWithProductCategories.flat()
+        }
+    });
+});
+
