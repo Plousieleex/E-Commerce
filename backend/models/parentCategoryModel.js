@@ -33,6 +33,11 @@ parentCategorySchema.pre('save', async function(next){
     next();
 });
 
+parentCategorySchema.pre(/^find/, async function(next){
+    this.find({ productVisibility: true });
+    next();
+});
+
 const ParentCategory = mongoose.model('ParentCategory', parentCategorySchema);
 
 module.exports = ParentCategory;
