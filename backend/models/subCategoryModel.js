@@ -15,7 +15,7 @@ const subCategorySchema = new mongoose.Schema({
         type: String
     },
     categoryImage: {
-        type: [String]
+        type: String
     },
     productCategories: [
         {
@@ -33,11 +33,22 @@ subCategorySchema.pre('save', async function(next){
     next();
 });
 
+subCategorySchema.pre('save', async function(next){
+    const trueCount = await this.constructor.countDocuments({productVisibility: true});
+
+    if (trueCount >= 6){
+        this.productVisibility = false;
+    }
+
+    next();
+});
+
 subCategorySchema.pre(/^find/, function (next){
     this.populate({
         path: 'parentCategory',
         select: 'parentCategoryTitle'
     });
+    this.find({ productVisibility: true });
     next();
 });
 

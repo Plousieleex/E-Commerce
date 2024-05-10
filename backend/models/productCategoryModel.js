@@ -15,7 +15,7 @@ const productCategorySchema = new mongoose.Schema({
         type: String
     },
     productCategoryImage: {
-        type: [String]
+        type: String
     }
 });
 
@@ -27,11 +27,22 @@ productCategorySchema.pre('save', async function(next){
     next();
 });
 
+productCategorySchema.pre('save', async function(next){
+    const trueCount = await this.constructor.countDocuments({productVisibility: true});
+
+    if (trueCount >= 8){
+        this.productVisibility = false;
+    }
+
+    next();
+});
+
 productCategorySchema.pre(/^find/, function (next) {
     this.populate({
         path: 'subCategory',
         select: 'subCategoryTitle'
     });
+    this.find({ productVisibility: true });
     next();
 });
 

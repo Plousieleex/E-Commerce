@@ -10,14 +10,32 @@ const parentCategorySchema = new mongoose.Schema({
         type: String
     },
     categoryImage:{
-        type: [String]
+        type: String
     },
     subCategories: [
         {
             type: mongoose.Schema.ObjectId,
             ref: 'SubCategory'
         }
-    ]
+    ],
+    productVisibility: {
+        type: Boolean
+    }
+});
+
+parentCategorySchema.pre('save', async function(next){
+    const trueCount = await this.constructor.countDocuments({productVisibility: true});
+
+    if(trueCount >= 9){
+        this.productVisibility = false;
+    }
+
+    next();
+});
+
+parentCategorySchema.pre(/^find/, async function(next){
+    this.find({ productVisibility: true });
+    next();
 });
 
 const ParentCategory = mongoose.model('ParentCategory', parentCategorySchema);
